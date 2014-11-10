@@ -8,7 +8,7 @@ from collections import defaultdict
 
 class KeyToInt():
     def __init__(self):
-        self._n = 0
+        self._n = -1
         self._map = {}
 
     def __getitem__(self, key):
@@ -32,7 +32,8 @@ def write_node_data(nid_f, nids, infile, outfile):
                             if nid_f(datum) in nids}, outfile)
 
 
-def make_examples(data_dir, n_users=1000, min_degree=1, min_active_time=None):
+def make_examples(data_dir, n_users=5000, min_degree=1, negative_sample_rate=0.01,
+                  min_active_time=None):
     """Creates a set of edges to be used as examples from a dataset. Using all (user, business)
     pairs as candidate edges is computationally infeasible, so we heuristically pick a set of edges
     that are likely to exist in the future.
@@ -42,6 +43,7 @@ def make_examples(data_dir, n_users=1000, min_degree=1, min_active_time=None):
     from them.
     """
     print "Loading data..."
+    # TODO: switch to networkx?
     G = snap.LoadEdgeList(snap.PUNGraph, data_dir + 'graph.txt', 0, 1)
     with open(data_dir + 'new_edges.txt') as f:
         edges = {tuple(map(int, line.split())) for line in f}
@@ -66,17 +68,19 @@ def make_examples(data_dir, n_users=1000, min_degree=1, min_active_time=None):
     random.seed(0)
     users = random.sample(users, n_users)
 
-    # TODO: downsample edges and include more users, maybe only downsample negative edges to help with the data skew
     print "Getting candidate set of edges..."
     examples = defaultdict(dict)
-    for u in util.logged_loop(users, util.LoopLogger(20, n_users, True)):
+    for u in util.logged_loop(users, util.LoopLogger(50, n_users, True)):
         candidate_businesses = snap.TIntV()
         snap.GetNodesAtHop(G, u, 3, candidate_businesses, True)
         for b in candidate_businesses:
-            examples[u][b] = 1 if (u, b) in edges else 0
+            if (u, b) in edges:
+                examples[u][b] = 1
+            elif random.random() < negative_sample_rate:
+                examples[u][b] = 0
 
     print "Writing examples..."
-    util.write_json(examples, data_dir + 'examples')
+    util.write_json(examples, data_dir + 'examples.json')
 
 
 def make_dataset(t1, t2, out_dir):
@@ -128,4 +132,5 @@ def make_dataset(t1, t2, out_dir):
 
 if __name__ == '__main__':
     make_dataset(datetime.date(2013, 1, 1), datetime.date(2013, 7, 1), './data/train/')
-    make_examples('./data/train/', n_users=1000, min_degree=5, min_active_time=datetime.date(2012, 7, 1))
+    make_examples('./data/train/', n_users=5000, min_degree=5,
+                  min_active_time=datetime.date(2012, 7, 1))
