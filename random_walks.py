@@ -19,7 +19,7 @@ def main():
         for b in examples[u]:
             examples[u][b] = p[0, int(b)]
 
-    util.write_json(examples, './data/train/random_walk.json')
+    util.write_json(examples, './data/train/random_walks.json')
 
 
 def run_random_walk(transition_matrix, u, iterations=10, jump_p=0.2):
