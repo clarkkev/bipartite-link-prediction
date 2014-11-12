@@ -1,10 +1,10 @@
 import util
+import matplotlib.pyplot as plt
 from sklearn.metrics import precision_recall_curve, average_precision_score
 from operator import itemgetter
-import matplotlib.pyplot as plt
 
 
-COLORS = ['r', 'b', 'g']
+COLORS = ['r', 'b', 'g', 'm', 'y', 'c']
 
 
 def run_evaluation(examples, methods, precision_at=20):
@@ -27,7 +27,7 @@ def run_evaluation(examples, methods, precision_at=20):
         p, r, t = precision_recall_curve(all_ys, all_ps)
         curve_args.append((p, r, method, COLORS[i]))
 
-        print "Method: ", method
+        print "Method:", method
         print "  Precision @{:} = {:.4f}".format(precision_at, total_precision / len(examples))
         print "  Auc = {:.4f}".format(auc)
 
@@ -43,4 +43,4 @@ def run_evaluation(examples, methods, precision_at=20):
 
 if __name__ == '__main__':
     run_evaluation(util.load_json('data/train/examples.json'),
-         ['random_baseline', 'random_walks'])
+         ['random_baseline', 'random_walks', 'weighted_random_walks'])
