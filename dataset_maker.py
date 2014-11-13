@@ -32,6 +32,16 @@ def write_node_data(nid_f, nids, infile, outfile):
                             if nid_f(datum) in nids}, outfile)
 
 
+def print_dataset_stats(data_dir):
+    n_users = len(util.load_json(data_dir + "user.json"))
+    n_businesses = len(util.load_json(data_dir + "business.json"))
+    n_edges = util.lines_in_file(data_dir + "new_edges.txt")
+    print "({:} users) * ({:} businesses) = {:.3e} candidate edges".format(
+        n_users, n_businesses, n_users * n_businesses)
+    print "{:} edges, {:0.5f}% of candidate edges".format(n_edges, 100 * n_edges /
+                                                          float(n_users * n_businesses))
+
+
 def make_examples_simple(data_dir, n_users, negative_examples_per_user=10):
     G = snap.LoadEdgeList(snap.PUNGraph, data_dir + 'graph.txt', 0, 1)
     new_edges = defaultdict(dict)
@@ -56,6 +66,7 @@ def make_examples_simple(data_dir, n_users, negative_examples_per_user=10):
             n += 1 - examples[u][b]
     print "Positive:", p
     print "Negative:", n
+    print "Sampling rate:", negative_examples_per_user / float(len(businesses))
 
     print "Writing examples..."
     util.write_json(examples, data_dir + 'examples_simple.json')
@@ -200,7 +211,8 @@ def make_dataset(t1, t2, out_dir):
 
 
 if __name__ == '__main__':
-    make_examples_simple('./data/train/', 5000, 100)
+    #make_examples_simple('./data/train/', 5000, 100)
+    print_dataset_stats('./data/train/')
     #make_examples('./data/train/', n_users=1000, min_degree=1,
     #              min_active_time=datetime.date(2012, 7, 1), new_edge_only=False)
     #make_examples('./data/train/', n_users=1000, min_degree=1,
