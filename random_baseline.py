@@ -1,6 +1,7 @@
 import util
 import random
 
+
 def main():
     examples = util.load_json('./data/train/examples.json')
     for u in examples:
