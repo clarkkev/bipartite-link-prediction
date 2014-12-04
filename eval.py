@@ -12,7 +12,7 @@ def run_evaluation(examples, methods, precision_at=20):
     curve_args = []
 
     for i, method in enumerate(methods):
-        predictions = util.load_json('./data/train/' + method + '.json')
+        predictions = util.load_json('./data/test/' + method + '.json')
         total_precision = 0
         all_ys, all_ps = [], []
         for u in examples:
@@ -49,4 +49,4 @@ def run_evaluation(examples, methods, precision_at=20):
 
 
 if __name__ == '__main__':
-    run_evaluation(util.load_json('data/train/examples.json'), ['random_baseline'])
+    run_evaluation(util.load_json('data/test/examples.json'), ['random_baseline'])

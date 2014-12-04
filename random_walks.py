@@ -8,10 +8,10 @@ from dataset_maker import get_date
 
 def main(weight_edges=False):
     print "Loading data and building transition matrix..."
-    examples = util.load_json('./data/train/examples.json')
-    G = nx.read_edgelist('./data/train/graph.txt', nodetype=int)
+    examples = util.load_json('./data/test/examples.json')
+    G = nx.read_edgelist('./data/test/graph.txt', nodetype=int)
     if weight_edges:
-        reviews = util.load_json('./data/train/review.json')
+        reviews = util.load_json('./data/test/review.json')
         end_date = datetime.date(2013, 1, 1)
         edges = G.edges()
         for e in util.logged_loop(edges, util.LoopLogger(20000, len(edges), True)):
@@ -32,7 +32,7 @@ def main(weight_edges=False):
         for b in examples[u]:
             examples[u][b] = p[0, int(b)]
 
-    util.write_json(examples, './data/train/' + ('weighted_random_walks.json' if weight_edges
+    util.write_json(examples, './data/test/' + ('weighted_random_walks.json' if weight_edges
                                                  else 'random_walks.json'))
 
 

@@ -9,9 +9,9 @@ import math
 def main():
 	start = datetime.datetime.now()
 	print "Loading examples..."
-	examples = util.load_json('./data/train/examples.json')
+	examples = util.load_json('./data/test/examples.json')
 	print "Loading graph..."
-	G = snap.LoadEdgeList(snap.PUNGraph, './data/train/graph.txt', 0, 1)
+	G = snap.LoadEdgeList(snap.PUNGraph, './data/test/graph.txt', 0, 1)
 	#users(examples, G)
 	business(examples, G)
 
@@ -43,7 +43,7 @@ def users(examples, G):
 	for u in examples:
 		for v in examples[u]:
 			examples[u][v] = adamic_adar(hop2s[int(u)], neighbors[int(v)], G)
-	util.write_json(examples, './data/train/common_neighbors_users.json')
+	util.write_json(examples, './data/test/common_neighbors_users.json')
 
 def business(examples, G):
 	hop2s = dict()
@@ -74,7 +74,7 @@ def business(examples, G):
 	for u in examples:
 		for v in examples[u]:
 			examples[u][v] = adamic_adar(hop2s[int(v)], neighbors[int(u)], G)
-	util.write_json(examples, './data/train/adamic_adar_business.json')
+	util.write_json(examples, './data/test/adamic_adar_business.json')
 
 def jaccard(setone, settwo):
 	intersection = len(setone.intersection(settwo))

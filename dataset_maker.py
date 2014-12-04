@@ -216,7 +216,10 @@ def make_dataset(t1, t2, out_dir):
 
 
 if __name__ == '__main__':
-    #make_dataset(datetime.date(2013, 1, 1), datetime.date(2013, 7, 1), './data/train/')
-    #make_examples_simple('./data/train/', 10000, 25)
+    make_dataset(datetime.date(2012, 1, 1), datetime.date(2012, 7, 1), './data/train/')
     make_examples('./data/train/', n_users=10000, min_degree=1, negative_sample_rate=0.01,
+                  min_active_time=datetime.date(2011, 7, 1), new_edge_only=False)
+
+    make_dataset(datetime.date(2013, 1, 1), datetime.date(2013, 7, 1), './data/test/')
+    make_examples('./data/test/', n_users=10000, min_degree=1, negative_sample_rate=0.01,
                   min_active_time=datetime.date(2012, 7, 1), new_edge_only=False)
