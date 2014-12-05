@@ -185,16 +185,16 @@ def make_dataset(t1, t2, out_dir):
     nids = set()
     for review in reviews_iterator():
         if get_date(review) < t1:
-            nids.add(id_to_nid[review['user_id']])
-            nids.add(id_to_nid[review['business_id']])
+            nids.add(id_to_nid['u' + review['user_id']])
+            nids.add(id_to_nid['b' + review['business_id']])
 
     print "Building user data..."
-    write_node_data(lambda user_data: id_to_nid[user_data['user_id']], nids,
+    write_node_data(lambda user_data: id_to_nid['u' + user_data['user_id']], nids,
                     './data/provided/yelp_academic_dataset_user.json',
                     out_dir + 'user.json')
 
     print "Building business data..."
-    write_node_data(lambda business_data: id_to_nid[business_data['business_id']], nids,
+    write_node_data(lambda business_data: id_to_nid['b' + business_data['business_id']], nids,
                     './data/provided/yelp_academic_dataset_business.json',
                     out_dir + 'business.json')
 
@@ -203,8 +203,8 @@ def make_dataset(t1, t2, out_dir):
             open(out_dir + 'new_edges.txt', 'w') as new_edges:
         review_data = defaultdict(lambda: defaultdict(list))
         for review in reviews_iterator():
-            user_key = id_to_nid[review['user_id']]
-            business_key = id_to_nid[review['business_id']]
+            user_key = id_to_nid['u' + review['user_id']]
+            business_key = id_to_nid['b' + review['business_id']]
             if user_key in nids and business_key in nids:
                 review_data[user_key][business_key].append(review)
                 date = get_date(review)
