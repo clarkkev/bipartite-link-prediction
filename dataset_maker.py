@@ -206,9 +206,9 @@ def make_dataset(t1, t2, out_dir):
             user_key = id_to_nid['u' + review['user_id']]
             business_key = id_to_nid['b' + review['business_id']]
             if user_key in nids and business_key in nids:
-                review_data[user_key][business_key].append(review)
                 date = get_date(review)
                 if date < t1:
+                    review_data[user_key][business_key].append(review)
                     graph.write("{:} {:}\n".format(user_key, business_key))
                 elif date < t2:
                     new_edges.write("{:} {:}\n".format(user_key, business_key))
