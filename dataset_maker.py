@@ -212,6 +212,11 @@ def make_dataset(t1, t2, out_dir):
                     graph.write("{:} {:}\n".format(user_key, business_key))
                 elif date < t2:
                     new_edges.write("{:} {:}\n".format(user_key, business_key))
+
+        for u in review_data:
+            for b in review_data[u]:
+                review_data[u][b] = sorted(review_data[u][b], key=get_date, reverse=True)
+
         util.write_json(review_data, out_dir + "review.json")
 
 
