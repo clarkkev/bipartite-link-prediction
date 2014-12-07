@@ -6,7 +6,7 @@ from scipy import sparse
 from dataset_maker import get_date
 
 
-def main(weight_edges=False):
+def run_random_walks(weight_edges=False):
     print "Loading data and building transition matrix..."
     examples = util.load_json('./data/test/examples.json')
     G = nx.read_edgelist('./data/test/graph.txt', nodetype=int)
@@ -36,7 +36,7 @@ def main(weight_edges=False):
                                                  else 'random_walks.json'))
 
 
-def run_random_walk(transition_matrix, u, iterations=10, jump_p=0.2):
+def run_random_walk(transition_matrix, u, iterations=20, jump_p=0.3):
     p = np.zeros(transition_matrix.shape[0])
     p[u] = 1.0
     p = sparse.csr_matrix(p)
@@ -52,4 +52,5 @@ def run_random_walk(transition_matrix, u, iterations=10, jump_p=0.2):
 
 
 if __name__ == '__main__':
-    main()
+    run_random_walks(False)
+    run_random_walks(True)
