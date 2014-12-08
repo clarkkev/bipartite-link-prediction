@@ -73,4 +73,8 @@ if __name__=="__main__":
     svm_classifier()
     print "The process has taken {:} secs".format(time.time()-now)
     
+<<<<<<< Updated upstream
     
+=======
+    
+>>>>>>> Stashed changes

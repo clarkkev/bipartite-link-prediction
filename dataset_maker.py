@@ -165,7 +165,7 @@ def make_examples(data_dir, n_users=5000, min_degree=1, negative_sample_rate=0.0
     print "Data skew:", hop3_positives / float(hop3_examples)
 
     print "Writing examples..."
-    util.write_json(examples, data_dir + 'examples.json')
+    util.write_json(examples, data_dir + 'supervised_examples.json')
 
 
 def make_dataset(t1, t2, out_dir):
@@ -216,7 +216,27 @@ def make_dataset(t1, t2, out_dir):
 
 
 if __name__ == '__main__':
+
     #make_dataset(datetime.date(2013, 1, 1), datetime.date(2013, 7, 1), './data/train/')
     #make_examples_simple('./data/train/', 10000, 25)
-    make_examples('./data/train/', n_users=10000, min_degree=1, negative_sample_rate=0.01,
-                  min_active_time=datetime.date(2012, 7, 1), new_edge_only=False)
+    #make_examples('./data/train/', n_users=10000, min_degree=1, negative_sample_rate=0.01,
+                  #min_active_time=datetime.date(2012, 7, 1), new_edge_only=False)
+
+
+    #make_examples_simple('./data/train/', 5000, 100)
+    #print_dataset_stats('./data/train/')
+    #make_examples('./data/train/', n_users=1000, min_degree=1,
+    #              min_active_time=datetime.date(2012, 7, 1), new_edge_only=False)
+    #make_examples('./data/train/', n_users=1000, min_degree=1,
+    #              min_active_time=None, new_edge_only=False)
+
+
+    make_dataset(datetime.date(2012, 1, 1), datetime.date(2012, 7, 1), './data/train/')
+    """
+    make_examples('./data/train/', n_users=10000, min_degree=1,
+                  min_active_time=datetime.date(2012, 7, 1))
+    """
+
+    #make_dataset(datetime.date(2013, 1, 1), datetime.date(2013, 7, 1), './train/')
+    #make_examples('./data/train/', n_users=1000, min_degree=5, min_active_time=datetime.date(2012, 7, 1))
+
