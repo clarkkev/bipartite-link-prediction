@@ -12,11 +12,11 @@ def run_evaluation(examples, methods, precision_at=20):
     curve_args = []
 
     for i, method in enumerate(methods):
-        predictions = util.load_json('./data/test/' + method + '.json')
+        predictions = util.load_json('./data/results/' + method + '.json')
         total_precision = 0
         all_ys, all_ps = [], []
-        for u in examples:
-            ys, ps = zip(*[(examples[u][b], predictions[u][b]) for b in examples[u]])
+        for u in predictions:
+            ys, ps = zip(*[(examples[u][b], predictions[u][b]) for b in predictions[u]])
             all_ys += ys
             all_ps += ps
 
@@ -25,15 +25,15 @@ def run_evaluation(examples, methods, precision_at=20):
             total_precision += sum(top_ys) / float(n)
 
         pr_auc = average_precision_score(all_ys, all_ps)
-        roc_auc = roc_auc_score(all_ys, all_ps)
+        #roc_auc = roc_auc_score(all_ys, all_ps)
         #p, r, t = precision_recall_curve(all_ys, all_ps)
         fpr, tpr, t = roc_curve(all_ys, all_ps)
         curve_args.append((fpr, tpr, method, COLORS[i]))
 
         print "Method:", method
         print "  Precision @{:} = {:.4f}".format(precision_at, total_precision / len(examples))
-        #print "  PR Auc = {:.4f}".format(pr_auc)
-        print "  ROC Auc = {:.4f}".format(roc_auc)
+        print "  PR Auc = {:.4f}".format(pr_auc)
+        #print "  ROC Auc = {:.4f}".format(roc_auc)
 
     #plt.xlabel('Recall')
     #plt.ylabel('Precision')
@@ -49,4 +49,14 @@ def run_evaluation(examples, methods, precision_at=20):
 
 
 if __name__ == '__main__':
-    run_evaluation(util.load_json('data/test/examples.json'), ['random_baseline'])
+
+    #run_evaluation(util.load_json('data/train/examples.json'), ['random_baseline'])
+
+
+    #run_evaluation(util.load_json('data/train/examples.json'),
+         #['random_baseline', 'random_walks', 'weighted_random_walks'])
+
+    run_evaluation(util.load_json('./data/test/examples.json'),
+         ['randomforest','gbm'])
+
+

@@ -6,12 +6,21 @@ from scipy import sparse
 from dataset_maker import get_date
 
 
+<<<<<<< HEAD
+def main(weight_edges=False):
+    print "Loading data and building transition matrix..."
+    examples = util.load_json('./data/train/examples.json')
+    G = nx.read_edgelist('./data/train/graph.txt', nodetype=int)
+    if weight_edges:
+        reviews = util.load_json('./data/train/review.json')
+=======
 def run_random_walks(weight_edges=False):
     print "Loading data and building transition matrix..."
     examples = util.load_json('./data/test/examples.json')
     G = nx.read_edgelist('./data/test/graph.txt', nodetype=int)
     if weight_edges:
         reviews = util.load_json('./data/test/review.json')
+>>>>>>> FETCH_HEAD
         end_date = datetime.date(2013, 1, 1)
         edges = G.edges()
         for e in util.logged_loop(edges, util.LoopLogger(20000, len(edges), True)):
@@ -32,11 +41,19 @@ def run_random_walks(weight_edges=False):
         for b in examples[u]:
             examples[u][b] = p[0, int(b)]
 
+<<<<<<< HEAD
+    util.write_json(examples, './data/train/' + ('weighted_random_walks.json' if weight_edges
+                                                 else 'random_walks.json'))
+
+
+def run_random_walk(transition_matrix, u, iterations=10, jump_p=0.2):
+=======
     util.write_json(examples, './data/test/' + ('weighted_random_walks.json' if weight_edges
                                                  else 'random_walks.json'))
 
 
 def run_random_walk(transition_matrix, u, iterations=20, jump_p=0.3):
+>>>>>>> FETCH_HEAD
     p = np.zeros(transition_matrix.shape[0])
     p[u] = 1.0
     p = sparse.csr_matrix(p)
@@ -52,5 +69,9 @@ def run_random_walk(transition_matrix, u, iterations=20, jump_p=0.3):
 
 
 if __name__ == '__main__':
+<<<<<<< HEAD
+    main()
+=======
     run_random_walks(False)
     run_random_walks(True)
+>>>>>>> FETCH_HEAD
