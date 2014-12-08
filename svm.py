@@ -73,8 +73,12 @@ if __name__=="__main__":
     svm_classifier()
     print "The process has taken {:} secs".format(time.time()-now)
     
+<<<<<<< HEAD
 <<<<<<< Updated upstream
     
 =======
     
 >>>>>>> Stashed changes
+=======
+    
+>>>>>>> FETCH_HEAD

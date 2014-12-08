@@ -5,6 +5,7 @@ import datetime
 from sets import Set
 from scipy import spatial
 import math
+<<<<<<< HEAD
 from collections import defaultdict
 
 
@@ -31,11 +32,39 @@ def users(examples, G, methods, outfiles):
 			for i in hop2nodes:
 				tempset.add(i)
 			hop2s[nodeid] = tempset
+=======
+
+def main():
+	start = datetime.datetime.now()
+	print "Loading examples..."
+	examples = util.load_json('./data/test/examples.json')
+	print "Loading graph..."
+	G = snap.LoadEdgeList(snap.PUNGraph, './data/test/graph.txt', 0, 1)
+	#users(examples, G)
+	business(examples, G)
+
+def users(examples, G):
+	hop2s = dict()
+	print "Getting 2 hops..."
+	for u in examples:
+		nodeid = int(u)
+    	# Get nodes at hop 2
+		hop2nodes = snap.TIntV()
+		snap.GetNodesAtHop(G, nodeid, 2, hop2nodes, True)
+		tempset = Set()
+		for i in hop2nodes:
+			tempset.add(i)
+		hop2s[nodeid] = tempset
+>>>>>>> FETCH_HEAD
 	print "Getting businesses..."
 	neighbors = dict()
 	for u in examples:
 		for v in examples[u]:
+<<<<<<< HEAD
 			if int(v) not in neighbors and int(v) in nodes:
+=======
+			if int(v) not in neighbors:
+>>>>>>> FETCH_HEAD
 				# Get neighbors of the business
 				temp = snap.TIntV()
 				snap.GetNodesAtHop(G, int(v), 1, temp, True)
@@ -44,6 +73,7 @@ def users(examples, G, methods, outfiles):
 					tempset.add(i)
 				neighbors[int(v)] = tempset
 	print "Beginning computation..."
+<<<<<<< HEAD
 
 	for m,f in zip(methods,outfiles):
 		u_sim=defaultdict(dict)
@@ -63,12 +93,22 @@ def users(examples, G, methods, outfiles):
 def business(examples, G, methods, outfiles):
 	hop2s = dict()
 	nodes=[N.GetId() for N in snap.Nodes(G)]
+=======
+	for u in examples:
+		for v in examples[u]:
+			examples[u][v] = adamic_adar(hop2s[int(u)], neighbors[int(v)], G)
+	util.write_json(examples, './data/test/common_neighbors_users.json')
+
+def business(examples, G):
+	hop2s = dict()
+>>>>>>> FETCH_HEAD
 	print "Getting 2 hops..."
 	for u in examples:
 		for v in examples[u]:
 			if int(v) not in hop2s:
 				nodeid = int(v)
 		    	# Get nodes at hop 2
+<<<<<<< HEAD
 				if nodeid in nodes:
 					hop2nodes = snap.TIntV()
 					snap.GetNodesAtHop(G, nodeid, 2, hop2nodes, True)
@@ -80,6 +120,18 @@ def business(examples, G, methods, outfiles):
 	neighbors = dict()
 	for u in examples:
 		if int(u) not in neighbors and int(u) in nodes:
+=======
+				hop2nodes = snap.TIntV()
+				snap.GetNodesAtHop(G, nodeid, 2, hop2nodes, True)
+				tempset = Set()
+				for i in hop2nodes:
+					tempset.add(i)
+				hop2s[nodeid] = tempset
+	print "Getting users..."
+	neighbors = dict()
+	for u in examples:
+		if int(u) not in neighbors:
+>>>>>>> FETCH_HEAD
 			# Get neighbors of the user
 			temp = snap.TIntV()
 			snap.GetNodesAtHop(G, int(u), 1, temp, True)
@@ -88,6 +140,7 @@ def business(examples, G, methods, outfiles):
 				tempset.add(i)
 			neighbors[int(u)] = tempset
 	print "Beginning computation..."
+<<<<<<< HEAD
 	for m,f in zip(methods,outfiles):
 		b_sim=defaultdict(dict)
 		for u in examples:
@@ -102,6 +155,12 @@ def business(examples, G, methods, outfiles):
 				else:
 					b_sim[u][v]=0
 		util.write_json(b_sim, f)
+=======
+	for u in examples:
+		for v in examples[u]:
+			examples[u][v] = adamic_adar(hop2s[int(v)], neighbors[int(u)], G)
+	util.write_json(examples, './data/test/adamic_adar_business.json')
+>>>>>>> FETCH_HEAD
 
 def jaccard(setone, settwo):
 	intersection = len(setone.intersection(settwo))
@@ -116,6 +175,7 @@ def adamic_adar(setone, settwo, G):
 	sum = 0
 	for i in intersection:
 		# Get neighbors count
+<<<<<<< HEAD
 		deg=G.GetNI(i).GetDeg()
 		if (deg>1):
 			sum += (math.log(deg))**-1
@@ -132,3 +192,10 @@ if __name__ == '__main__':
              ['common_neighbors','jaccard','adamic_adar'],
 		  ['./data/train/b_cn.json', './data/train/b_jaccard.json',
 					'./data/train/b_adamic.json'],)
+=======
+		sum += (math.log(G.GetNI(i).GetDeg()))**-1
+	return sum
+
+if __name__ == '__main__':
+    main()
+>>>>>>> FETCH_HEAD
