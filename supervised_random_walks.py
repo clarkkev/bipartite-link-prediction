@@ -11,9 +11,10 @@ from collections import defaultdict
 ALPHA = 0.3
 WMV_LOSS_WIDTH = 0.0005
 H = 0.02
-LEARNING_RATE = 4
-MAX_POSITIVE_EXAMPLES = 5
-MAX_NEGATIVE_EXAMPLES = 100
+LEARNING_RATE = 0.5
+NUM_TRAIN_USERS = 200
+MAX_POSITIVE_EDGES_PER_USER = 5
+MAX_NEGATIVE_EDGES_PER_USER = 100
 
 
 def f(x):
@@ -23,18 +24,19 @@ def f(x):
 def h(x):
     return 1 / (1 + np.exp(x / WMV_LOSS_WIDTH))
 
-INITIAL_WEIGHTS = {
-    "age": 1.8,
-    "age_0.5": 0.95,
-    "age_0.2": 0.6,
-    "stars": 0.6,
-    "liked": 0.45,
+INITIAL_WEIGHTS = util.load_json('./data/supervised_random_walks_weights.json')
+'''{
+    "age": 1.89,
+    "age_0.5": 1.34,
+    "age_0.2": 0.97,
+    "stars": 0.84,
+    "liked": 0.30,
     #"count": len(reviews) / 2.0,
-    "bias": -5.8
-}
+    "bias": -5.81
+}'''
 
-def get_features(reviews):
-    end_date = datetime.date(2013, 1, 1)
+def get_features(reviews, is_train):
+    end_date = datetime.date(2012, 1, 1) if is_train else datetime.date(2013, 1, 1)
     return {
         "age": 50.0 / ((end_date - get_date(reviews[0])).days + 30),
         "age_0.5": 10.0 / (((end_date - get_date(reviews[0])).days + 30) ** 0.5),
@@ -46,7 +48,9 @@ def get_features(reviews):
     }
 
 
-def get_phi(data_dir):
+def get_phi(is_train):
+    data_dir = 'train' if is_train else 'test'
+
     print "Loading reviews..."
     reviews = util.load_json('./data/' + data_dir + '/review.json')
 
@@ -56,13 +60,16 @@ def get_phi(data_dir):
 
     print "Building feature matrices..."
     phi = defaultdict(lambda: sparse.lil_matrix((n, n), dtype=float))
+    i = 0
     for (u, v) in G.edges():
         if str(u) not in reviews:
             u, v = v, u
-        features = get_features(reviews[str(u)][str(v)])
+        features = get_features(reviews[str(u)][str(v)], is_train)
         for feature_name, value in features.iteritems():
             phi[feature_name][u, v] = value
             phi[feature_name][v, u] = value
+
+    print "converting..."
     for k, m in phi.items():
         phi[k] = sparse.csr_matrix(m)
 
@@ -79,12 +86,13 @@ def get_Q(phi, w):
     return d_inv.dot(a)
 
 
-def get_ps(Q, old_ps, max_iter=50, convergence_criteria=1e-4):
+def get_ps(Q, old_ps, max_iter=50, convergence_criteria=1e-4, log=False):
     ps = {}
     total_iterations = 0
+    ll = util.LoopLogger(10, len(old_ps), True)
     for i, u in enumerate(old_ps):
-        #if i % 20 == 0:
-        #    print "   ", i
+        if log:
+            ll.step()
         ps[u], iterations = stationary_distribution(Q, u, old_ps[u], max_iter, convergence_criteria)
         total_iterations += iterations
     print "  average_iterations {:.2f}".format(total_iterations / float(len(old_ps)))
@@ -140,12 +148,12 @@ def run(phi, w, Ds, Ls, old_ps):
     return loss, ps
 
 
-def train(train_users=100):
-    phi = get_phi('test')
+def train():
+    phi = get_phi(True)
 
     print "Loading examples..."
     Ds, Ls = {}, {}
-    examples = util.load_json('./data/test/examples.json')
+    examples = util.load_json('./data/train/examples.json')
     us = list(examples.keys())
     random.seed(0)
     random.shuffle(us)
@@ -153,14 +161,14 @@ def train(train_users=100):
         D, L = set(), set()
         for b in examples[u]:
             (D if examples[u][b] == 1 else L).add(int(b))
-        if len(D) > MAX_POSITIVE_EXAMPLES:
-            D = random.sample(D, MAX_POSITIVE_EXAMPLES)
-        if len(L) > MAX_NEGATIVE_EXAMPLES:
-            L = random.sample(L, MAX_POSITIVE_EXAMPLES)
+        if len(D) > MAX_POSITIVE_EDGES_PER_USER:
+            D = random.sample(D, MAX_POSITIVE_EDGES_PER_USER)
+        if len(L) > MAX_NEGATIVE_EDGES_PER_USER:
+            L = random.sample(L, MAX_POSITIVE_EDGES_PER_USER)
         if len(D) > 1:
             Ds[int(u)] = list(D)
             Ls[int(u)] = list(L)
-            if len(Ds) > train_users:
+            if len(Ds) > NUM_TRAIN_USERS:
                 break
 
     print "Setting initial conditions..."
@@ -195,23 +203,25 @@ def train(train_users=100):
 
 
 def test():
-    phi = get_phi('test')
+    phi = get_phi(False)
     examples = util.load_json('./data/test/examples.json')
     w = util.load_json('./data/supervised_random_walks_weights.json')
-    Q = get_Q(phi, w)
 
+    print "Computing Q and initializing..."
+    Q = get_Q(phi, w)
     ps = {}
     for u in examples:
         p = np.zeros(phi['bias'].shape[0])
         p[int(u)] = 1.0
         ps[int(u)] = sparse.csr_matrix(p)
-    get_ps(Q, ps, max_iter=20)
+    get_ps(Q, ps, max_iter=20, log=True)
 
+    print "Writing..."
     for u in examples:
         for b in examples[u]:
-            examples[u][b] = ps[int(u)][int(b)]
+            examples[u][b] = ps[int(u)][0, int(b)]
     util.write_json(examples, './data/test/supervised_random_walks.json')
 
 
 if __name__ == '__main__':
-    train()
+    test()
