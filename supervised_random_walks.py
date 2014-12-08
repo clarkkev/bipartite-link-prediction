@@ -214,7 +214,7 @@ def test():
         p = np.zeros(phi['bias'].shape[0])
         p[int(u)] = 1.0
         ps[int(u)] = sparse.csr_matrix(p)
-    get_ps(Q, ps, max_iter=20, log=True)
+    ps = get_ps(Q, ps, max_iter=20, log=True)
 
     print "Writing..."
     for u in examples:
