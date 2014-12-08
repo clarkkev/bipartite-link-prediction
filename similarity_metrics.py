@@ -131,3 +131,10 @@ if __name__ == '__main__':
              ['common_neighbors','jaccard','adamic_adar'],
 		  ['./data/train/b_cn.json', './data/train/b_jaccard.json',
 					'./data/train/b_adamic.json'],)
+    main('./data/test/examples.json','./data/test/graph.txt',
+             ['common_neighbors','jaccard','adamic_adar'],
+             ['./data/test/u_cn.json', './data/test/u_jaccard.json',
+					'./data/test/u_adamic.json'],
+             ['common_neighbors','jaccard','adamic_adar'],
+		  ['./data/test/b_cn.json', './data/test/b_jaccard.json',
+					'./data/test/b_adamic.json'],)

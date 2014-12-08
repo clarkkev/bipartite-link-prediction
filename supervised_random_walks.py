@@ -8,11 +8,16 @@ import random
 from collections import defaultdict
 
 
+TOP_20 = False
+if TOP_20:
+    BUSINESSES = set(map(int, util.load_json('./data/test/business.json').keys()))
+
 ALPHA = 0.3
 WMV_LOSS_WIDTH = 0.0005
-H = 0.02
-LEARNING_RATE = 0.5
-NUM_TRAIN_USERS = 200
+H = 0.01
+REGULARIZATION_CONSTANT = 0.00001
+LEARNING_RATE = 30
+NUM_TRAIN_USERS = 400
 MAX_POSITIVE_EDGES_PER_USER = 5
 MAX_NEGATIVE_EDGES_PER_USER = 100
 
@@ -24,7 +29,8 @@ def f(x):
 def h(x):
     return 1 / (1 + np.exp(x / WMV_LOSS_WIDTH))
 
-INITIAL_WEIGHTS = util.load_json('./data/supervised_random_walks_weights.json')
+INITIAL_WEIGHTS = util.load_json('./data/supervised_random_walks_weights_old.json')
+#INITIAL_WEIGHTS['liked'] = 0
 '''{
     "age": 1.89,
     "age_0.5": 1.34,
@@ -69,7 +75,7 @@ def get_phi(is_train):
             phi[feature_name][u, v] = value
             phi[feature_name][v, u] = value
 
-    print "converting..."
+    print "Converting..."
     for k, m in phi.items():
         phi[k] = sparse.csr_matrix(m)
 
@@ -86,14 +92,25 @@ def get_Q(phi, w):
     return d_inv.dot(a)
 
 
-def get_ps(Q, old_ps, max_iter=50, convergence_criteria=1e-4, log=False):
+def get_ps(Q, old_ps, max_iter=50, convergence_criteria=1e-4, log=False, examples=None):
     ps = {}
     total_iterations = 0
     ll = util.LoopLogger(10, len(old_ps), True)
-    for i, u in enumerate(old_ps):
+    for u in old_ps:
         if log:
             ll.step()
         ps[u], iterations = stationary_distribution(Q, u, old_ps[u], max_iter, convergence_criteria)
+        if examples:
+            if TOP_20:
+                top = sorted([(ps[u][0, i], i) for i in range(ps[u].shape[1]) if i in BUSINESSES],
+                             reverse=True)[:20]
+                examples[str(u)] = {}
+                for (p, i) in top:
+                    examples[str(u)][str(i)] = p
+            else:
+                for b in examples[str(u)]:
+                    examples[str(u)][b] = ps[u][0, int(b)]
+            del ps[u]
         total_iterations += iterations
     print "  average_iterations {:.2f}".format(total_iterations / float(len(old_ps)))
     return ps
@@ -105,7 +122,7 @@ def stationary_distribution(Q, u, p_init, max_iter=50, convergence_criteria=1e-4
         new_p = np.dot(p, Q)
         new_p *= (1 - ALPHA)
         new_p[0, u] += ALPHA
-        delta = np.sum(abs((new_p - p).data))
+        delta = 0 if convergence_criteria == 0 else np.sum(abs((new_p - p).data))
         #if u % 10 == 1:
         #    print i, delta
         p = new_p
@@ -114,7 +131,7 @@ def stationary_distribution(Q, u, p_init, max_iter=50, convergence_criteria=1e-4
     return p, (i + 1)
 
 
-def get_loss(ps, Ds, Ls):
+def get_loss(ps, Ds, Ls, w):
     loss = 0
     #diff_total = 0
     #c = 0
@@ -132,7 +149,9 @@ def get_loss(ps, Ds, Ls):
                 #c += 1
         loss += u_loss / u_updates
 
-    #print " ", diff_total / c, diff_total2 / c
+    loss /= len(ps)
+    loss += REGULARIZATION_CONSTANT * np.sqrt(sum(wk ** 2 for wk in w.values()))
+
     return loss
 
 
@@ -143,7 +162,7 @@ def run(phi, w, Ds, Ls, old_ps):
     print "  computing ps..."
     ps = get_ps(Q, old_ps)
     print "  computing loss..."
-    loss = get_loss(ps, Ds, Ls)
+    loss = get_loss(ps, Ds, Ls, w)
     print "  loss =", loss
     return loss, ps
 
@@ -198,6 +217,8 @@ def train():
             new_loss, _ = run(phi, new_w, Ds, Ls, ps)
             partials[k] = (new_loss - base_loss) / H
 
+            print partials[k] * LEARNING_RATE
+
         for (k, dwk) in partials.iteritems():
             w[k] -= LEARNING_RATE * dwk
 
@@ -214,14 +235,12 @@ def test():
         p = np.zeros(phi['bias'].shape[0])
         p[int(u)] = 1.0
         ps[int(u)] = sparse.csr_matrix(p)
-    ps = get_ps(Q, ps, max_iter=20, log=True)
+    get_ps(Q, ps, max_iter=20, convergence_criteria=0, log=True, examples=examples)
 
     print "Writing..."
-    for u in examples:
-        for b in examples[u]:
-            examples[u][b] = ps[int(u)][0, int(b)]
-    util.write_json(examples, './data/test/supervised_random_walks.json')
+    util.write_json(examples, './data/test/supervised_random_walks'
+                    + ('top_20' if TOP_20 else '') + '.json')
 
 
 if __name__ == '__main__':
-    test()
+    train()
