@@ -7,14 +7,13 @@ import networkx as nx
 import random
 from collections import defaultdict
 
-
 TOP_20 = False
 if TOP_20:
     BUSINESSES = set(map(int, util.load_json('./data/test/business.json').keys()))
 
 ALPHA = 0.3
 WMV_LOSS_WIDTH = 0.0005
-H = 0.01
+H = 0.02
 REGULARIZATION_CONSTANT = 0.00001
 LEARNING_RATE = 30
 NUM_TRAIN_USERS = 400
@@ -40,6 +39,9 @@ INITIAL_WEIGHTS = util.load_json('./data/supervised_random_walks_weights_old.jso
     #"count": len(reviews) / 2.0,
     "bias": -5.81
 }'''
+#INITIAL_WEIGHTS['user_degree'] = 0
+#INITIAL_WEIGHTS['business_degree'] = 0
+
 
 def get_features(reviews, is_train):
     end_date = datetime.date(2012, 1, 1) if is_train else datetime.date(2013, 1, 1)
@@ -63,6 +65,7 @@ def get_phi(is_train):
     print "Building graph..."
     G = nx.read_edgelist('./data/' + data_dir + '/graph.txt', nodetype=int)
     n = G.number_of_nodes()
+
 
     print "Building feature matrices..."
     phi = defaultdict(lambda: sparse.lil_matrix((n, n), dtype=float))
@@ -184,7 +187,7 @@ def train():
             D = random.sample(D, MAX_POSITIVE_EDGES_PER_USER)
         if len(L) > MAX_NEGATIVE_EDGES_PER_USER:
             L = random.sample(L, MAX_POSITIVE_EDGES_PER_USER)
-        if len(D) > 1:
+        if len(D) > 1 and len(L) > 10:
             Ds[int(u)] = list(D)
             Ls[int(u)] = list(L)
             if len(Ds) > NUM_TRAIN_USERS:
@@ -227,6 +230,15 @@ def test():
     phi = get_phi(False)
     examples = util.load_json('./data/test/examples.json')
     w = util.load_json('./data/supervised_random_walks_weights.json')
+
+    '''
+    us = sorted(examples.keys())
+    random.seed(0)
+    random.shuffle(us)
+    us = us[:1000]
+    new_examples = {u: examples[u] for u in us}
+    examples = new_examples
+    '''
 
     print "Computing Q and initializing..."
     Q = get_Q(phi, w)
