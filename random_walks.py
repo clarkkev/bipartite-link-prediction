@@ -65,7 +65,7 @@ def run_random_walk(transition_matrix, u, iterations=10, jump_p=0.2):
 
 
 if __name__ == '__main__':
-    #run_random_walks('train', False)
-    run_random_walks('test', False)
+    run_random_walks('train', False)
+    run_random_walks('train', False)
     #run_random_walks('test', False)
     #run_random_walks('test', True)
