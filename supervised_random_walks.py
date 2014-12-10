@@ -174,7 +174,7 @@ def train():
         ps[u] = sparse.csr_matrix(p)
 
     print "Training..."
-    w = util.load_json('./data/supervised_random_walks_weights.json')#INITIAL_WEIGHTS
+    w = INITIAL_WEIGHTS
     best_loss = 100000
     for i in range(100):
         print "ITERATION " + str(i + 1) + ": base"
