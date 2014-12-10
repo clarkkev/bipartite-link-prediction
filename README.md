@@ -9,6 +9,6 @@ Bipartite link prediction over Yelp's Dataset Challenge dataset
  - similarity.py
  - supervised_models.py
  - supervised_random_walks.py
- - supervised.py
+ - supervised_classifier.py
  - svd.py
 4. Use eval.py to generate model evaluation metrics.
