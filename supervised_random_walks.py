@@ -28,19 +28,14 @@ def f(x):
 def h(x):
     return 1 / (1 + np.exp(x / WMV_LOSS_WIDTH))
 
-INITIAL_WEIGHTS = util.load_json('./data/supervised_random_walks_weights_old.json')
-#INITIAL_WEIGHTS['liked'] = 0
-'''{
+INITIAL_WEIGHTS = {
     "age": 1.89,
     "age_0.5": 1.34,
     "age_0.2": 0.97,
     "stars": 0.84,
     "liked": 0.30,
-    #"count": len(reviews) / 2.0,
     "bias": -5.81
-}'''
-#INITIAL_WEIGHTS['user_degree'] = 0
-#INITIAL_WEIGHTS['business_degree'] = 0
+}
 
 
 def get_features(reviews, is_train):
@@ -200,8 +195,6 @@ def train():
         p[u] = 1.0
         ps[u] = sparse.csr_matrix(p)
 
-    #run(phi, w, Ds, Ls, ps)
-
     print "Training..."
     w = INITIAL_WEIGHTS
     best_loss = 100000
@@ -231,15 +224,6 @@ def test():
     examples = util.load_json('./data/test/examples.json')
     w = util.load_json('./data/supervised_random_walks_weights.json')
 
-    '''
-    us = sorted(examples.keys())
-    random.seed(0)
-    random.shuffle(us)
-    us = us[:1000]
-    new_examples = {u: examples[u] for u in us}
-    examples = new_examples
-    '''
-
     print "Computing Q and initializing..."
     Q = get_Q(phi, w)
     ps = {}
@@ -255,4 +239,5 @@ def test():
 
 
 if __name__ == '__main__':
-    train()
+    #train()
+    test()

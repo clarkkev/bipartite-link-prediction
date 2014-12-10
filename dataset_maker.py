@@ -185,16 +185,16 @@ def make_dataset(t1, t2, out_dir):
     nids = set()
     for review in reviews_iterator():
         if get_date(review) < t1:
-            nids.add(id_to_nid[review['user_id']])
-            nids.add(id_to_nid[review['business_id']])
+            nids.add(id_to_nid['u' + review['user_id']])
+            nids.add(id_to_nid['b' + review['business_id']])
 
     print "Building user data..."
-    write_node_data(lambda user_data: id_to_nid[user_data['user_id']], nids,
+    write_node_data(lambda user_data: id_to_nid['u' + user_data['user_id']], nids,
                     './data/provided/yelp_academic_dataset_user.json',
                     out_dir + 'user.json')
 
     print "Building business data..."
-    write_node_data(lambda business_data: id_to_nid[business_data['business_id']], nids,
+    write_node_data(lambda business_data: id_to_nid['b' + business_data['business_id']], nids,
                     './data/provided/yelp_academic_dataset_business.json',
                     out_dir + 'business.json')
 
@@ -203,25 +203,28 @@ def make_dataset(t1, t2, out_dir):
             open(out_dir + 'new_edges.txt', 'w') as new_edges:
         review_data = defaultdict(lambda: defaultdict(list))
         for review in reviews_iterator():
-            user_key = id_to_nid[review['user_id']]
-            business_key = id_to_nid[review['business_id']]
+            user_key = id_to_nid['u' + review['user_id']]
+            business_key = id_to_nid['b' + review['business_id']]
             if user_key in nids and business_key in nids:
-                review_data[user_key][business_key].append(review)
                 date = get_date(review)
                 if date < t1:
+                    review_data[user_key][business_key].append(review)
                     graph.write("{:} {:}\n".format(user_key, business_key))
                 elif date < t2:
                     new_edges.write("{:} {:}\n".format(user_key, business_key))
+
+        for u in review_data:
+            for b in review_data[u]:
+                review_data[u][b] = sorted(review_data[u][b], key=get_date, reverse=True)
+
         util.write_json(review_data, out_dir + "review.json")
 
 
 if __name__ == '__main__':
     make_dataset(datetime.date(2012, 1, 1), datetime.date(2012, 7, 1), './data/train/')
-    make_dataset(datetime.date(2013, 1, 1), datetime.date(2013, 7, 1), './data/test/')
-
     make_examples('./data/train/', n_users=10000, min_degree=1, negative_sample_rate=0.01,
                   min_active_time=datetime.date(2011, 7, 1), new_edge_only=False)
+
+    make_dataset(datetime.date(2013, 1, 1), datetime.date(2013, 7, 1), './data/test/')
     make_examples('./data/test/', n_users=10000, min_degree=1, negative_sample_rate=0.01,
                   min_active_time=datetime.date(2012, 7, 1), new_edge_only=False)
-
-

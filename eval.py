@@ -50,8 +50,7 @@ def run_evaluation(examples, methods, precision_at=20):
 
 if __name__ == '__main__':
     run_evaluation(util.load_json('data/test/examples.json'),
-                   ['random_walks', 'weighted_random_walks', 'supervised_random_walks',
-                    'supervised_huge', 'supervised_gradient'])
+                   ['random_walks', 'weighted_random_walks', 'svd'])
 
 
 
