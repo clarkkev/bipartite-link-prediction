@@ -4,7 +4,7 @@ from sklearn.metrics import roc_auc_score, roc_curve
 from operator import itemgetter
 
 
-COLORS = ['r', 'b', 'g', 'm', 'y', 'c', 'k', '#FF9900', '#006600']
+COLORS = ['r', 'b', 'g', 'm', 'y', 'c', 'k', '#FF9900', '#006600', '#663300']
 
 
 def run_evaluation(examples, methods, precision_at=20):
@@ -25,11 +25,15 @@ def run_evaluation(examples, methods, precision_at=20):
 
         roc_auc = roc_auc_score(all_ys, all_ps)
         fpr, tpr, t = roc_curve(all_ys, all_ps)
-        curve_args.append((fpr, tpr, method, COLORS[i]))
+        curve_args.append((fpr, tpr, method, COLORS[i % len(COLORS)]))
 
         print "Method:", method
         print "  Precision @{:} = {:.4f}".format(precision_at, total_precision / len(examples))
         print "  ROC Auc = {:.4f}".format(roc_auc)
+
+    if i >= len(COLORS):
+        print "Too many methods to plot all of them!"
+        return
 
     plt.figure(figsize=(9, 9))
     plt.xlabel('False Positive Rate')
@@ -45,8 +49,19 @@ def run_evaluation(examples, methods, precision_at=20):
 if __name__ == '__main__':
     run_evaluation(util.load_json('data/test/examples.json'),
                    ['examples',
-                    'random_baseline', 'supervised_random_walks',
-                    'random_walks', 'weighted_random_walks', 'svd'])
+                    'u_adamic',
+                    'u_cn',
+                    'u_jaccard',
+                    'b_adamic',
+                    'b_cn',
+                    'b_jaccard',
+                    'random_baseline',
+                    'svd',
+                    'random_walks',
+                    'weighted_random_walks',
+                    'supervised_random_walks',
+                    'supervised_classifier'
+                   ])
 
 
 

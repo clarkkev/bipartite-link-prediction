@@ -19,9 +19,9 @@ INITIAL_WEIGHTS = {
     "age": 2,
     "age_0.5": 0,
     "age_0.2": 0,
-    "stars": 1,
+    "stars": 0,
     "liked": 0,
-    "bias": -4
+    "bias": -2
 }
 
 
@@ -56,10 +56,8 @@ def get_phi(is_train):
     G = nx.read_edgelist('./data/' + data_dir + '/graph.txt', nodetype=int)
     n = G.number_of_nodes()
 
-
     print "Building feature matrices..."
     phi = defaultdict(lambda: sparse.lil_matrix((n, n), dtype=float))
-    i = 0
     for (u, v) in G.edges():
         if str(u) not in reviews:
             u, v = v, u
@@ -217,4 +215,4 @@ def test():
 
 if __name__ == '__main__':
     train()
-    #test()
+    test()
