@@ -6,11 +6,6 @@ from scipy import sparse
 from dataset_maker import get_date
 
 
-TOP_20 = False
-if TOP_20:
-    BUSINESSES = set(map(int, util.load_json('./data/test/business.json').keys()))
-
-
 def run_random_walks(data_dir, weight_edges=False):
     print "Loading data and building transition matrix..."
     examples = util.load_json('./data/' + data_dir + '/examples.json')
@@ -34,19 +29,11 @@ def run_random_walks(data_dir, weight_edges=False):
     print "Running random walks..."
     for u in util.logged_loop(examples, util.LoopLogger(10, len(examples), True)):
         p = run_random_walk(transition_matrix, int(u), 10).todense()
-        if TOP_20:
-            top = sorted([(p[0, i], i) for i in range(p.shape[1]) if i in BUSINESSES],
-                         reverse=True)[:20]
-            examples[str(u)] = {}
-            for (p, i) in top:
-                examples[str(u)][str(i)] = p
-        else:
-            for b in examples[u]:
-                examples[u][b] = p[0, int(b)]
+        for b in examples[u]:
+            examples[u][b] = p[0, int(b)]
 
     util.write_json(examples, './data/' + data_dir
-                    + ('/weighted_random_walks' if weight_edges else '/random_walks')
-                    + ('top_20' if TOP_20 else '') + '.json')
+                    + ('/weighted_random_walks.json' if weight_edges else '/random_walks.json'))
 
 
 def run_random_walk(transition_matrix, u, iterations=10, jump_p=0.2):
@@ -54,8 +41,6 @@ def run_random_walk(transition_matrix, u, iterations=10, jump_p=0.2):
     p[u] = 1.0
     p = sparse.csr_matrix(p)
 
-    # solving for the stationary distribution exactly is not feasible, so we instead just run a
-    # random walk for some number of iterations
     for i in range(iterations):
         p = np.dot(p, transition_matrix)
         p *= (1 - jump_p)

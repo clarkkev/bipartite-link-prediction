@@ -79,14 +79,6 @@ def make_examples_simple(data_dir, n_users, negative_examples_per_user=10):
 
 def make_examples(data_dir, n_users=5000, min_degree=1, negative_sample_rate=0.01,
                   min_active_time=None, new_edge_only=False):
-    """Creates a set of edges to be used as examples from a dataset. Using all (user, business)
-    pairs as candidate edges is computationally infeasible, so we heuristically pick a set of edges
-    that are likely to exist in the future.
-
-    This is done by picking n_users users that have degree at least min_degree, have written a
-    review after min_active_time, and (if new_edge_only=True) will make at least one new link by
-    time t'. These users are linked to all businesses that are of distance 3 from them.
-    """
     print "Loading data..."
     # TODO: switch to networkx?
     G = snap.LoadEdgeList(snap.PUNGraph, data_dir + 'graph.txt', 0, 1)
@@ -151,7 +143,6 @@ def make_examples(data_dir, n_users=5000, min_degree=1, negative_sample_rate=0.0
             elif random.random() < negative_sample_rate:
                 examples[u][b] = 0
 
-    #hop3_positives = sum(examples[u][b] for b in examples[u] for u in examples)
     hop3_positives = 0
     for u in examples:
         for b in examples[u]:
@@ -169,12 +160,6 @@ def make_examples(data_dir, n_users=5000, min_degree=1, negative_sample_rate=0.0
 
 
 def make_dataset(t1, t2, out_dir):
-    """Creates a dataset in out_dir consisting of
-        - A snapshot of the review graph at time t1
-        - All new edges that are added between times t1 and t2
-        - Data for the relevant users, businesses, and reviews
-    """
-
     if not os.path.exists(out_dir):
         os.makedirs(out_dir)
 
